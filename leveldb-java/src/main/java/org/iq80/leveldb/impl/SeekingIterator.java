@@ -33,4 +33,17 @@ public interface SeekingIterator<K, V>
      * Repositions the iterator so the key of the next BlockElement returned greater than or equal to the specified targetKey.
      */
     void seek(K targetKey);
+    
+    /**
+     * Move to previous.
+     * @return
+     */
+    Entry<K, V> prev();
+    
+    boolean hasPrev();
+    
+    /**
+     * Repositions the iterator so the last of this block
+     */
+    void seekToLast();
 }
