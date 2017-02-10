@@ -45,6 +45,13 @@ public final class TableIterator
         current = null;
     }
 
+	@Override
+	protected void seekToLastInternal() {
+		// TODO Auto-generated method stub
+		this.blockIterator.seekToLast();
+		current = null;
+	}
+
     @Override
     protected void seekInternal(Slice targetKey)
     {
@@ -113,4 +120,10 @@ public final class TableIterator
         sb.append('}');
         return sb.toString();
     }
+
+	@Override
+	protected Entry<Slice, Slice> getPrevElement() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -34,16 +34,9 @@ public interface SeekingIterator<K, V>
      */
     void seek(K targetKey);
     
-    /**
-     * Move to previous.
-     * @return
-     */
     Entry<K, V> prev();
     
-    boolean hasPrev();
-    
-    /**
-     * Repositions the iterator so the last of this block
-     */
     void seekToLast();
+    
+    boolean hasPrev();
 }

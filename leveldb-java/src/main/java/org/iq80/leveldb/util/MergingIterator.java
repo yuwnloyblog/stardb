@@ -181,4 +181,14 @@ public final class MergingIterator
             return result;
         }
     }
+
+	@Override
+	protected void seekToLastInternal() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	protected Entry<InternalKey, Slice> getPrevElement() {
+		throw new UnsupportedOperationException();
+	}
 }

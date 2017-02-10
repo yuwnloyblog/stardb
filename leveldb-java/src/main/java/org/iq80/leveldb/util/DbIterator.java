@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Stack;
 
 public final class DbIterator
         extends AbstractSeekingIterator<InternalKey, Slice>
@@ -57,6 +58,7 @@ public final class DbIterator
     private final Comparator<InternalKey> comparator;
 
     private final ComparableIterator[] heap;
+    private final Stack<ComparableIterator> reverseStack;
     private int heapSize;
 
     public DbIterator(MemTableIterator memTableIterator,
@@ -72,6 +74,7 @@ public final class DbIterator
         this.comparator = comparator;
 
         this.heap = new ComparableIterator[3 + level0Files.size() + levels.size()];
+        this.reverseStack = new Stack<ComparableIterator>();
         resetPriorityQueue();
     }
 
@@ -91,7 +94,35 @@ public final class DbIterator
             level.seekToFirst();
         }
         resetPriorityQueue();
+        this.reverseStack.clear();
     }
+
+	@Override
+	protected void seekToLastInternal() {
+		/*if (memTableIterator != null) {
+			memTableIterator.seekToLast();
+		}
+		if (immutableMemTableIterator != null) {
+			immutableMemTableIterator.seekToLast();
+		}
+		for (InternalTableIterator level0File : level0Files) {
+			level0File.seekToLast();
+		}
+		for (LevelIterator level : levels) {
+			level.seekToLast();
+		}
+		resetPriorityQueue();*/
+		this.resetPriorityQueue();
+		while(heapSize > 0){
+			ComparableIterator smallest = this.heap[0];
+			this.reverseStack.push(smallest);
+			heapSize --;
+			heap[0] = heap[heapSize];
+			heap[heapSize] = null;
+			this.heapSiftDown(0);
+			smallest.seekToLast();
+		}
+	}
 
     @Override
     protected void seekInternal(InternalKey targetKey)
@@ -140,6 +171,21 @@ public final class DbIterator
 
         return result;
     }
+
+	@Override
+	protected Entry<InternalKey, Slice> getPrevElement() {
+		if(this.reverseStack.size() == 0){
+			return null;
+		}
+		ComparableIterator highest = this.reverseStack.peek();
+		Entry<InternalKey, Slice> result = highest.prev();
+		
+		if(!highest.hasPrev()){
+			highest.seekToFirst();
+			this.heapAdd(highest);
+		}
+		return result;
+	}
 
     private void resetPriorityQueue()
     {
@@ -227,6 +273,7 @@ public final class DbIterator
         private final Comparator<InternalKey> comparator;
         private final int ordinal;
         private Entry<InternalKey, Slice> nextElement;
+        private Entry<InternalKey, Slice> prevElement;
 
         private ComparableIterator(SeekingIterator<InternalKey, Slice> iterator, Comparator<InternalKey> comparator, int ordinal, Entry<InternalKey, Slice> nextElement)
         {
@@ -240,6 +287,10 @@ public final class DbIterator
         public boolean hasNext()
         {
             return nextElement != null;
+        }
+        
+        public boolean hasPrev(){
+        	return this.prevElement != null;
         }
 
         @Override
@@ -256,7 +307,39 @@ public final class DbIterator
             else {
                 nextElement = null;
             }
+            this.prevElement = result;
             return result;
+        }
+        
+        public Entry<InternalKey, Slice> prev(){
+        	if(this.prevElement == null){
+        		throw new NoSuchElementException();
+        	}
+        	
+        	Entry<InternalKey, Slice> result = this.prevElement;
+        	if(this.iterator.hasPrev()){
+        		this.prevElement = this.iterator.prev();
+        	}else{
+        		this.prevElement = null;
+        	}
+        	this.nextElement = result;
+        	return result;
+        }
+        
+        public void seekToFirst(){
+        	this.iterator.seekToFirst();
+        	this.prevElement = null;
+        	if(this.iterator.hasNext()){
+        		this.nextElement = this.iterator.next();
+        	}
+        }
+        
+        public void seekToLast(){
+        	this.iterator.seekToLast();
+        	this.nextElement = null;
+        	if(this.iterator.hasPrev()){
+        		this.prevElement = this.iterator.prev();
+        	}
         }
 
         @Override

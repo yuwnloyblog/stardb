@@ -26,18 +26,28 @@ public abstract class AbstractSeekingIterator<K, V>
         implements SeekingIterator<K, V>
 {
     private Entry<K, V> nextElement;
+    private Entry<K, V> prevElement;
 
     @Override
     public final void seekToFirst()
     {
         nextElement = null;
+        prevElement = null;
         seekToFirstInternal();
     }
+
+	@Override
+	public void seekToLast() {
+		this.nextElement = null;
+		this.prevElement = null;
+		this.seekToLastInternal();
+	}
 
     @Override
     public final void seek(K targetKey)
     {
         nextElement = null;
+        prevElement = null;
         seekInternal(targetKey);
     }
 
@@ -50,6 +60,14 @@ public abstract class AbstractSeekingIterator<K, V>
         return nextElement != null;
     }
 
+	@Override
+	public boolean hasPrev() {
+		if(this.prevElement == null){
+			this.prevElement = this.getPrevElement();
+		}
+		return this.prevElement != null;
+	}
+
     @Override
     public final Entry<K, V> next()
     {
@@ -61,9 +79,25 @@ public abstract class AbstractSeekingIterator<K, V>
         }
 
         Entry<K, V> result = nextElement;
+        this.prevElement = nextElement;
         nextElement = null;
         return result;
     }
+    
+    @Override
+	public Entry<K, V> prev() {
+		if(this.prevElement == null){
+			this.prevElement = this.getPrevElement();
+			if(this.prevElement == null){
+				throw new NoSuchElementException();
+			}
+		}
+		
+		Entry<K, V> result = this.prevElement;
+		this.nextElement = this.prevElement;
+		this.prevElement = null;
+		return result;
+	}
 
     @Override
     public final Entry<K, V> peek()
@@ -85,8 +119,12 @@ public abstract class AbstractSeekingIterator<K, V>
     }
 
     protected abstract void seekToFirstInternal();
+    
+    protected abstract void seekToLastInternal();
 
     protected abstract void seekInternal(K targetKey);
 
     protected abstract Entry<K, V> getNextElement();
+    
+    protected abstract Entry<K, V> getPrevElement();
 }

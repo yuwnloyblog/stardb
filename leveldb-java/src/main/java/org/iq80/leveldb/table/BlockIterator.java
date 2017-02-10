@@ -37,6 +37,7 @@ public class BlockIterator
     private final Slice restartPositions;
     private final int restartCount;
     private final Comparator<Slice> comparator;
+    private int currentPosition = 0;
 
     private BlockEntry nextEntry;
 
@@ -57,13 +58,16 @@ public class BlockIterator
         seekToFirst();
     }
 
-    @Override
     public boolean hasNext()
     {
         return nextEntry != null;
     }
 
-    @Override
+	@Override
+	public boolean hasPrev() {
+		 return this.currentPosition>0;
+	}
+
     public BlockEntry peek()
     {
         if (!hasNext()) {
@@ -83,10 +87,12 @@ public class BlockIterator
 
         if (!data.isReadable()) {
             nextEntry = null;
+            this.currentPosition = this.restartCount;
         }
         else {
             // read entry at current data position
             nextEntry = readEntry(data, nextEntry);
+            this.currentPosition ++;
         }
 
         return entry;
@@ -106,7 +112,17 @@ public class BlockIterator
     {
         if (restartCount > 0) {
             seekToRestartPosition(0);
+            this.currentPosition = 0;
         }
+    }
+    
+    /**
+     * Repositions the iterator so the last of this block
+     */
+    public void seekToLast(){
+    	if(restartCount > 0){
+    		this.seekToRestartPosition(restartCount);
+    	}
     }
 
     /**
@@ -157,14 +173,19 @@ public class BlockIterator
     private void seekToRestartPosition(int restartPosition)
     {
         Preconditions.checkPositionIndex(restartPosition, restartCount, "restartPosition");
-
+        this.currentPosition = restartPosition;
+        
+        // clear the entries to assure key is not prefixed
+        nextEntry = null;
+        
+        if(restartPosition == this.restartCount){//seek to last position
+        	data.setPosition(data.slice().length());
+        	return;
+        }
         // seek data readIndex to the beginning of the restart block
         int offset = restartPositions.getInt(restartPosition * SIZE_OF_INT);
         data.setPosition(offset);
-
-        // clear the entries to assure key is not prefixed
-        nextEntry = null;
-
+        
         // read the entry
         nextEntry = readEntry(data, null);
     }
@@ -179,12 +200,12 @@ public class BlockIterator
     private static BlockEntry readEntry(SliceInput data, BlockEntry previousEntry)
     {
         Preconditions.checkNotNull(data, "data is null");
-
+        
         // read entry header
         int sharedKeyLength = VariableLengthQuantity.readVariableLengthInt(data);
         int nonSharedKeyLength = VariableLengthQuantity.readVariableLengthInt(data);
         int valueLength = VariableLengthQuantity.readVariableLengthInt(data);
-
+        
         // read key
         Slice key = Slices.allocate(sharedKeyLength + nonSharedKeyLength);
         SliceOutput sliceOutput = key.output();
@@ -193,10 +214,19 @@ public class BlockIterator
             sliceOutput.writeBytes(previousEntry.getKey(), 0, sharedKeyLength);
         }
         sliceOutput.writeBytes(data, nonSharedKeyLength);
-
+        
         // read value
         Slice value = data.readSlice(valueLength);
 
         return new BlockEntry(key, value);
     }
+
+	@Override
+	public BlockEntry prev() {
+		if(!this.hasPrev()){
+			throw new NoSuchElementException();
+		}
+		this.seekToRestartPosition(this.currentPosition - 1);
+		return this.nextEntry;
+	}
 }

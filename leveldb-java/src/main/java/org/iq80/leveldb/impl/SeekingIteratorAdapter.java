@@ -94,19 +94,19 @@ public class SeekingIteratorAdapter
     @Override
     public void seekToLast()
     {
-        throw new UnsupportedOperationException();
+        this.seekingIterator.seekToLast();
     }
 
     @Override
     public boolean hasPrev()
-    {
-        throw new UnsupportedOperationException();
+    {	
+    	return this.seekingIterator.hasPrev();
     }
 
     @Override
     public DbEntry prev()
     {
-        throw new UnsupportedOperationException();
+    	return adapt(seekingIterator.prev());
     }
 
     @Override

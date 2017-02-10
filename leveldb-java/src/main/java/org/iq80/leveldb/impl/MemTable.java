@@ -23,6 +23,7 @@ import com.google.common.collect.PeekingIterator;
 import org.iq80.leveldb.util.InternalIterator;
 import org.iq80.leveldb.util.Slice;
 
+import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -94,6 +95,7 @@ public class MemTable
             implements InternalIterator
     {
         private PeekingIterator<Entry<InternalKey, Slice>> iterator;
+        private Entry<InternalKey, Slice> prevEntry;
 
         public MemTableIterator()
         {
@@ -105,11 +107,21 @@ public class MemTable
         {
             return iterator.hasNext();
         }
+        
+        @Override
+        public boolean hasPrev(){
+        	return this.prevEntry!=null;
+        }
 
         @Override
         public void seekToFirst()
         {
             iterator = Iterators.peekingIterator(table.entrySet().iterator());
+        }
+        
+        @Override
+        public void seekToLast(){
+        	this.prevEntry = table.lastEntry();
         }
 
         @Override
@@ -127,9 +139,21 @@ public class MemTable
 
         @Override
         public InternalEntry next()
-        {
+        {	
+        	this.prevEntry = iterator.peek();
             Entry<InternalKey, Slice> entry = iterator.next();
             return new InternalEntry(entry.getKey(), entry.getValue());
+        }
+        
+        @Override
+        public InternalEntry prev(){
+        	if(!this.hasPrev()){
+        		throw new NoSuchElementException();
+        	}
+        	InternalEntry entry = new InternalEntry(this.prevEntry.getKey(), this.prevEntry.getValue());
+        	this.seek(this.prevEntry.getKey());
+        	this.prevEntry = table.lowerEntry(entry.getKey());
+        	return entry;
         }
 
         @Override

@@ -85,7 +85,7 @@ public class Block
 
         // key restart count is the last int of the block
         int restartCount = block.getInt(block.length() - SIZE_OF_INT);
-
+        
         if (restartCount > 0) {
             // restarts are written at the end of the block
             int restartOffset = block.length() - (1 + restartCount) * SIZE_OF_INT;

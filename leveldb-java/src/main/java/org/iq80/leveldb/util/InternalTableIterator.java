@@ -39,6 +39,11 @@ public class InternalTableIterator
         tableIterator.seekToFirst();
     }
 
+	@Override
+	protected void seekToLastInternal() {
+		this.tableIterator.seekToLast();
+	}
+
     @Override
     public void seekInternal(InternalKey targetKey)
     {
@@ -64,4 +69,13 @@ public class InternalTableIterator
         sb.append('}');
         return sb.toString();
     }
+
+	@Override
+	protected Entry<InternalKey, Slice> getPrevElement() {
+		if(this.tableIterator.hasPrev()){
+			Entry<Slice, Slice> prev = this.tableIterator.prev();
+			return Maps.immutableEntry(new InternalKey(prev.getKey()), prev.getValue());
+		}
+		return null;
+	}
 }

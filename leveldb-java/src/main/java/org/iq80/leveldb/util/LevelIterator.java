@@ -50,6 +50,13 @@ public final class LevelIterator
         current = null;
     }
 
+	@Override
+	protected void seekToLastInternal() {
+		index = this.files.size()-1;
+		current = this.openPrevFile();
+		current.seekToLast();
+	}
+
     @Override
     protected void seekInternal(InternalKey targetKey)
     {
@@ -136,6 +143,12 @@ public final class LevelIterator
         index++;
         return tableCache.newIterator(fileMetaData);
     }
+    
+    private InternalTableIterator openPrevFile(){
+    	FileMetaData fileMetaData = files.get(index);
+    	index --;
+    	return tableCache.newIterator(fileMetaData);
+    }
 
     @Override
     public String toString()
@@ -148,4 +161,29 @@ public final class LevelIterator
         sb.append('}');
         return sb.toString();
     }
+
+	@Override
+	protected Entry<InternalKey, Slice> getPrevElement() {
+		boolean currentHasPrev = false;
+		while(true){
+			if(current!=null){
+				currentHasPrev = current.hasPrev();
+			}
+			if(!currentHasPrev){
+				if(index >= 0){
+					current = openPrevFile();
+				}else{
+					break;
+				}
+			}else{
+				break;
+			}
+		}
+		if(currentHasPrev){
+			return current.prev();
+		}else{
+			current = null;
+			return null;
+		}
+	}
 }

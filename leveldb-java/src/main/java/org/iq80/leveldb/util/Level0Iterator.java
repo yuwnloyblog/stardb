@@ -201,4 +201,14 @@ public final class Level0Iterator
             return result;
         }
     }
+
+	@Override
+	protected void seekToLastInternal() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	protected Entry<InternalKey, Slice> getPrevElement() {
+		throw new UnsupportedOperationException();
+	}
 }
