@@ -22,20 +22,26 @@ public class DbIteratorTest {
 //			db.put("aaa".getBytes(), "vafds".getBytes());
 //			db.put("bbb".getBytes(), "fdsfs".getBytes());
 //			db.put("ccc".getBytes(), "fsfs".getBytes());
+//			db.put("ddd".getBytes(), "dfsfs".getBytes());
+//			db.put("eee".getBytes(), "fdsfs".getBytes());
+//			db.put("fff".getBytes(), "fdsfdsf".getBytes());
 			DBIterator it = db.iterator();
-		
-			while(it.hasNext()){
-				Entry<byte[], byte[]> entry = it.next();
-				//System.out.println(new String(entry.getKey())+","+new String(entry.getValue()));
-				//break;
-			}
+			int count = 0;
+			//it.seek("bbb".getBytes());
+//			while(it.hasNext()){
+//				Entry<byte[], byte[]> entry = it.next();
+//				System.out.println(new String(entry.getKey())+","+new String(entry.getValue()));
+//				//break;
+//				count ++;
+//				//if(count==3)break;
+//			}
 			System.out.println("***********");
 //			it.prev();
 //			it.prev();
-			while(it.hasPrev()){
-				Entry<byte[], byte[]> entry = it.prev();
-				//System.out.println(new String(entry.getKey())+","+new String(entry.getValue()));
-			}
+//			while(it.hasPrev()){
+//				Entry<byte[], byte[]> entry = it.prev();
+//				System.out.println(new String(entry.getKey())+","+new String(entry.getValue()));
+//			}
 		}catch(IOException e){
 			e.printStackTrace();
 		}

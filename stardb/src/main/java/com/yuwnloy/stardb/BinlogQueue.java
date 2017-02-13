@@ -40,10 +40,12 @@ public class BinlogQueue {
 		this.last_seq = 0;
 		this.tran_seq = 0;
 		
-		Binlog log = this.find_last();
-		if(log!=null){
-			this.last_seq = log.seq();
-		}System.out.println("last_seq:"+this.last_seq);
+//		Binlog log = this.find_last();
+//		if(log!=null){
+//			this.last_seq = log.seq();
+//		}
+		this.last_seq = this.find_lastSeq();
+		System.out.println("last_seq:"+this.last_seq);
 		// 下面这段代码是可能性能非常差!
 		//if(this->find_next(0, &log) == 1){
 		//	this->min_seq = log.seq();
@@ -57,13 +59,13 @@ public class BinlogQueue {
 		Binlog nextLog = this.find_next(this.min_seq);
 		if(nextLog!=null){
 			this.min_seq = nextLog.seq();
-		}System.out.println("min_seq:"+min_seq);
+		}
 		
 		if(this.enabled){
 			logger.info("binlogs capacity: "+ this.capacity + ", min: "+this.min_seq + ", max: "+this.last_seq);
 			// start cleaning thread
 			this.thread_quit = false;
-			log_clean_thread_func(this);
+			//log_clean_thread_func(this);
 		}
 		
 	}
@@ -111,6 +113,7 @@ public class BinlogQueue {
 	}
 	public void commit() throws DBException{
 		try{
+			this.batch.put(this.encode_seq_key(-1), ByteUtil.long2Bytes(this.tran_seq));
 			this.db.write(this.batch);
 			this.last_seq = this.tran_seq;
 			this.tran_seq = 0;
@@ -192,37 +195,32 @@ public class BinlogQueue {
 		}
 		return log;
 	}
+	public final long find_lastSeq(){
+		byte[] seqBytes = this.db.get(this.encode_seq_key(-1));
+		if(seqBytes!=null)
+			return ByteUtil.bytes2Long(seqBytes);
+		else
+			return 0L;
+	}
+	/**
+	 * need to test.
+	 * @return
+	 */
 	public final Binlog find_last(){
 		Binlog log = null;
 		//byte[] key_str = this.encode_seq_key(Long.MAX_VALUE);
 		DBIterator it = this.db.iterator();
 		//it.seek(key_str);
-		System.out.println("Start.");
-		while(it.hasNext()){
-			Entry<byte[],byte[]> entry = it.next();
+		it.seekToLast();
+		if(it.hasPrev()){
+			Entry<byte[],byte[]> entry = it.prev();
 			byte[] key = entry.getKey();
 			if(this.decode_seq_key(key) != 0){
 				byte[] val = entry.getValue();
 				log = new Binlog();
 				log.load(val);
-				System.out.println(log.seq()+","+new String(val));
 			}
 		}
-		System.out.println("specify:");
-		byte[] v = this.db.get(this.encode_seq_key(1));
-		System.out.println(new String(v));
-		v = this.db.get(this.encode_seq_key(2));
-		System.out.println(new String(v));
-		//it.seekToLast();
-//		if(it.hasPrev()){
-//			Entry<byte[],byte[]> entry = it.prev();
-//			byte[] key = entry.getKey();
-//			if(this.decode_seq_key(key) != 0){
-//				byte[] val = entry.getValue();
-//				log = new Binlog();
-//				log.load(val);
-//			}
-//		}
 		try {
 			it.close();
 		} catch (IOException e) {

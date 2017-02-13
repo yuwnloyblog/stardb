@@ -28,9 +28,9 @@ public class Test {
 			//System.out.println(log.seq());
 			logQueue.begin();
 //			
-//			logQueue.add_log(Constants.BinlogType.SYNC, Constants.BinlogCommand.HSET, "aaa");
+			logQueue.add_log(Constants.BinlogType.SYNC, Constants.BinlogCommand.HSET, "aaa");
 //			logQueue.add_log(Constants.BinlogType.SYNC, Constants.BinlogCommand.HSET, "bbb");
-//			logQueue.commit();
+			logQueue.commit();
 //			String status = logQueue.status();
 //			System.out.println(status);
 		} catch (IOException e) {

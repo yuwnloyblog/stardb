@@ -40,6 +40,7 @@ public class BlockIterator
     private int currentPosition = 0;
 
     private BlockEntry nextEntry;
+    //private Stack<BlockEntry> stack = null;
 
     public BlockIterator(Slice data, Slice restartPositions, Comparator<Slice> comparator)
     {
@@ -52,10 +53,25 @@ public class BlockIterator
 
         this.restartPositions = restartPositions.slice();
         restartCount = this.restartPositions.length() / SIZE_OF_INT;
-
         this.comparator = comparator;
 
         seekToFirst();
+//        this.stack = new Stack<BlockEntry>();
+//        
+//        int count = 0;
+//        while(this.hasNext()){
+//        	this.next();
+//        	count++;
+//        }this.seekToFirst();
+//        if(count>2){
+//        	//this.seek(new Slice("aaa".getBytes()));
+//        	//this.seekToRestartPosition(1);
+//        	while(this.hasNext()){
+//        		BlockEntry ent = this.next();
+//        		System.out.println(new String(ent.getKey().getBytes()));
+//        	}
+//        	this.seekToFirst();
+//        }
     }
 
     public boolean hasNext()
@@ -87,14 +103,13 @@ public class BlockIterator
 
         if (!data.isReadable()) {
             nextEntry = null;
-            this.currentPosition = this.restartCount;
         }
         else {
             // read entry at current data position
             nextEntry = readEntry(data, nextEntry);
-            this.currentPosition ++;
         }
-
+        this.currentPosition ++;
+        //this.stack.push(entry);
         return entry;
     }
 
