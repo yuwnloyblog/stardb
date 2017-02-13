@@ -99,19 +99,6 @@ public final class DbIterator
 
 	@Override
 	protected void seekToLastInternal() {
-		/*if (memTableIterator != null) {
-			memTableIterator.seekToLast();
-		}
-		if (immutableMemTableIterator != null) {
-			immutableMemTableIterator.seekToLast();
-		}
-		for (InternalTableIterator level0File : level0Files) {
-			level0File.seekToLast();
-		}
-		for (LevelIterator level : levels) {
-			level.seekToLast();
-		}
-		resetPriorityQueue();*/
 		this.resetPriorityQueue();
 		while(heapSize > 0){
 			ComparableIterator smallest = this.heap[0];
@@ -159,6 +146,7 @@ public final class DbIterator
             replacementElement = smallest;
         }
         else {
+        	this.reverseStack.push(smallest);
             heapSize--;
             replacementElement = heap[heapSize];
             heap[heapSize] = null;
@@ -168,7 +156,7 @@ public final class DbIterator
             heap[0] = replacementElement;
             heapSiftDown(0);
         }
-
+        
         return result;
     }
 
@@ -315,7 +303,6 @@ public final class DbIterator
         	if(this.prevElement == null){
         		throw new NoSuchElementException();
         	}
-        	
         	Entry<InternalKey, Slice> result = this.prevElement;
         	if(this.iterator.hasPrev()){
         		this.prevElement = this.iterator.prev();

@@ -116,12 +116,12 @@ public final class SnapshotSeekingIterator
             }
             else if (internalKey.getValueType() == ValueType.VALUE) {
                 // is this value masked by a prior deletion record?
-                if (deletedKey == null || userComparator.compare(internalKey.getUserKey(), deletedKey) < 0) {
+                if (deletedKey == null || userComparator.compare(internalKey.getUserKey(), deletedKey) > 0) {
                     return;
                 }
             }
-            iterator.prev();
-        } while (iterator.hasPrev());
+            iterator.next();
+        } while (iterator.hasNext());
     }
     
     private void findPrevUserEntry(Slice deletedKey)
@@ -147,12 +147,12 @@ public final class SnapshotSeekingIterator
             }
             else if (internalKey.getValueType() == ValueType.VALUE) {
                 // is this value masked by a prior deletion record?
-                if (deletedKey == null || userComparator.compare(internalKey.getUserKey(), deletedKey) > 0) {
+                if (deletedKey == null || userComparator.compare(internalKey.getUserKey(), deletedKey) < 0) {
                     return;
                 }
             }
-            iterator.next();
-        } while (iterator.hasNext());
+            iterator.prev();
+        } while (iterator.hasPrev());
     }
 
     @Override

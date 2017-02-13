@@ -103,11 +103,44 @@ public final class TableIterator
         }
     }
 
+	@Override
+	protected Entry<Slice, Slice> getPrevElement() {
+		boolean currentHasPrev = false;
+		while(true){
+			if(current!=null){
+				currentHasPrev = current.hasPrev();
+			}
+			if(!currentHasPrev){
+				if(blockIterator.hasPrev()){
+					current = this.getPrevBlock();
+				}else{
+					break;
+				}
+			}else{
+				break;
+			}
+		}
+		if(currentHasPrev){
+			return current.prev();
+		}else{
+			current = null;
+			return null;
+		}
+	}
+
     private BlockIterator getNextBlock()
     {
         Slice blockHandle = blockIterator.next().getValue();
         Block dataBlock = table.openBlock(blockHandle);
         return dataBlock.iterator();
+    }
+    
+    private BlockIterator getPrevBlock(){
+    	Slice blockHandle = blockIterator.prev().getValue();
+    	Block dataBlock = table.openBlock(blockHandle);
+    	BlockIterator iterator = dataBlock.iterator();
+    	iterator.seekToLast();
+    	return iterator;
     }
 
     @Override
@@ -120,10 +153,4 @@ public final class TableIterator
         sb.append('}');
         return sb.toString();
     }
-
-	@Override
-	protected Entry<Slice, Slice> getPrevElement() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

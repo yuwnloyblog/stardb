@@ -27,11 +27,12 @@ public class Test {
 			//Binlog log = logQueue.find_last();
 			//System.out.println(log.seq());
 			logQueue.begin();
-			
-			logQueue.add_log(Constants.BinlogType.SYNC, Constants.BinlogCommand.HSET, "aaa");
-			logQueue.commit();
-			String status = logQueue.status();
-			System.out.println(status);
+//			
+//			logQueue.add_log(Constants.BinlogType.SYNC, Constants.BinlogCommand.HSET, "aaa");
+//			logQueue.add_log(Constants.BinlogType.SYNC, Constants.BinlogCommand.HSET, "bbb");
+//			logQueue.commit();
+//			String status = logQueue.status();
+//			System.out.println(status);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
