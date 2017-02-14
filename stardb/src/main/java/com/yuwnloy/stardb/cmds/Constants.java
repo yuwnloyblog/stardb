@@ -1,4 +1,4 @@
-package com.yuwnloy.stardb;
+package com.yuwnloy.stardb.cmds;
 
 public class Constants {
 	public final static int SIZE_OF_LONG = 8;

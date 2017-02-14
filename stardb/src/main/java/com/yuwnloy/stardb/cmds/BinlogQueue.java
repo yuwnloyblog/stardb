@@ -1,4 +1,4 @@
-package com.yuwnloy.stardb;
+package com.yuwnloy.stardb.cmds;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -11,7 +11,6 @@ import org.iq80.leveldb.DBException;
 import org.iq80.leveldb.DBIterator;
 import org.iq80.leveldb.WriteBatch;
 import org.iq80.leveldb.impl.WriteBatchImpl;
-import org.iq80.leveldb.util.Slice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,6 @@ public class BinlogQueue {
 	private int capacity = 20000000;
 	private WriteBatch batch;
 	private boolean enabled = true;
-	public ReentrantLock mutex;
 	
 	private volatile boolean thread_quit;
 	
@@ -105,7 +103,7 @@ public class BinlogQueue {
 	}
 	
 	public void begin(){
-		this.tran_seq = this.last_seq;System.out.println("begin tran_seq:"+this.tran_seq);
+		this.tran_seq = this.last_seq;
 		this.batch = new WriteBatchImpl();
 	}
 	public void rollback(){
@@ -136,7 +134,7 @@ public class BinlogQueue {
 			return;
 		}
 		this.tran_seq ++;
-		Binlog log = new Binlog(this.tran_seq, type, cmd, key);System.out.println("add tran_seq:"+this.tran_seq);
+		Binlog log = new Binlog(this.tran_seq, type, cmd, key);
 		this.batch.put(this.encode_seq_key(this.tran_seq), log.repr());
 	}
 	public void add_log(Constants.BinlogType type, Constants.BinlogCommand cmd, final String key){
@@ -184,8 +182,10 @@ public class BinlogQueue {
 			byte[] key = entry.getKey();
 			if(this.decode_seq_key(key)!=0){
 				byte[] val = entry.getValue();
-				log = new Binlog();
-				log.load(val);
+				if(val!=null&&val.length>=Constants.BINLOG_HEADER_LEN){
+					log = new Binlog();
+					log.load(val);
+				}
 			}
 		}
 		try {

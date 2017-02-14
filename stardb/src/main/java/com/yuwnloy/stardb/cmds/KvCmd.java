@@ -1,10 +1,13 @@
-package com.yuwnloy.stardb;
+package com.yuwnloy.stardb.cmds;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.ReadOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.yuwnloy.stardb.cmds.Constants.BinlogCommand;
 import com.yuwnloy.stardb.utils.ByteUtil;
 
 /**
@@ -15,8 +18,25 @@ import com.yuwnloy.stardb.utils.ByteUtil;
  */
 public class KvCmd extends AbstractCmd{
 	private static Logger logger = LoggerFactory.getLogger(KvCmd.class);
-	public KvCmd(DB db, ReadOptions options){
-		super(db, options);
+	
+	private static KvCmd instance;
+	private static ReentrantLock lock = new ReentrantLock();
+	public static KvCmd getInstance(DB db, ReadOptions options, BinlogQueue binlogs){
+		if(instance==null){
+			lock.lock();
+			try{
+				if(instance==null){
+					instance = new KvCmd(db,options, binlogs);
+				}
+			}finally{
+				lock.unlock();
+			}
+		}
+		return instance;
+	}
+	
+	private KvCmd(DB db, ReadOptions options, BinlogQueue binlogs){
+		super(db, options, binlogs);
 	}
 	/**
 	 * set kv
@@ -29,7 +49,16 @@ public class KvCmd extends AbstractCmd{
 			logger.error("empty key!");
 			return 0;
 		}
-		this.db_put(key, value);
+		this.startTransation();
+		try{
+			this.db_put(key, value, BinlogCommand.KSET);
+			this.commit();
+		}catch(Exception e){
+			logger.error(e.getMessage(), e);
+			return -1;
+		}finally{
+			this.endTransaction();
+		}
 		return 1;
 	}
 	/**
@@ -168,10 +197,9 @@ public class KvCmd extends AbstractCmd{
 	
 	@Override
 	public byte[] encode_key(byte[] key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(Constants.DataType.KV.getByte());
-		sb.append(key);
-		return sb.toString().getBytes();
+		byte[] rets = ByteUtil.append(null, Constants.DataType.KV.getByte());
+		rets = ByteUtil.append(rets, key);
+		return rets;
 	}
 	@Override
 	public int decode_key(byte[] slice, byte[] key) {

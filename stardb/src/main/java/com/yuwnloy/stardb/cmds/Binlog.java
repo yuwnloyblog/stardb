@@ -1,4 +1,4 @@
-package com.yuwnloy.stardb;
+package com.yuwnloy.stardb.cmds;
 
 import org.iq80.leveldb.util.Slice;
 import com.google.common.primitives.Bytes;
@@ -54,7 +54,7 @@ public class Binlog {
 	
 	public final String dumps(){
 		StringBuilder str=new StringBuilder();
-		if(this.buf.length<Constants.BINLOG_HEADER_LEN){
+		if(this.buf==null||this.buf.length<Constants.BINLOG_HEADER_LEN){
 			return str.toString();
 		}
 		String seqStr = String.valueOf(this.seq());

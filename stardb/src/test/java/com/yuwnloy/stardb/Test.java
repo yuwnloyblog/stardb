@@ -13,7 +13,11 @@ import java.util.List;
 
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.Options;
+import org.iq80.leveldb.ReadOptions;
 
+import com.yuwnloy.stardb.cmds.Binlog;
+import com.yuwnloy.stardb.cmds.BinlogQueue;
+import com.yuwnloy.stardb.cmds.KvCmd;
 import com.yuwnloy.stardb.utils.ByteUtil;
 
 public class Test {
@@ -23,20 +27,65 @@ public class Test {
 		options.createIfMissing(true);
 		try {
 			DB db = factory.open(new File("/tmp/stardb/example"), options);
-			BinlogQueue logQueue = new BinlogQueue(db, true, 10);
-			//Binlog log = logQueue.find_last();
-			//System.out.println(log.seq());
-			logQueue.begin();
-//			
-			logQueue.add_log(Constants.BinlogType.SYNC, Constants.BinlogCommand.HSET, "aaa");
-//			logQueue.add_log(Constants.BinlogType.SYNC, Constants.BinlogCommand.HSET, "bbb");
-			logQueue.commit();
-//			String status = logQueue.status();
-//			System.out.println(status);
+			BinlogQueue logQueue = new BinlogQueue(db, true);
+			
+			KvCmd kvCmd = KvCmd.getInstance(db, new ReadOptions(), logQueue);
+			foreachBinlog(kvCmd);
+			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
+	public static void getset(KvCmd kvCmd){
+		byte[] ret = kvCmd.get("abc".getBytes());
+		System.out.println("get:"+new String(ret));
+		ret = kvCmd.getset("abc".getBytes(), "xiaoguang".getBytes());
+		System.out.println("getset:"+new String(ret));
+		ret = kvCmd.get("abc".getBytes());
+		System.out.println("get:"+new String(ret));
+	}
+	
+	public static void IncrTest(KvCmd kvCmd){
+		kvCmd.incr("incrTest".getBytes());
+		kvCmd.incr("incrTest".getBytes());
+		byte[] ret = kvCmd.get("incrTest".getBytes());
+		System.out.println("incr:"+new String(ret));
+		
+		
+		kvCmd.incrby("incrTest".getBytes(),10);
+		ret = kvCmd.get("incrTest".getBytes());
+		System.out.println("after add 10:"+new String(ret));
+	}
+	
+	public static void DecrTest(KvCmd kvCmd){
+		//kvCmd.decr("incrTest".getBytes());
+		byte[] ret = kvCmd.get("incrTest".getBytes());
+		System.out.println("decr 1 :"+new String(ret));
+		
+		kvCmd.decrby("incrTest".getBytes(), 10);
+		ret = kvCmd.get("incrTest".getBytes());
+		System.out.println("decr 10 :"+new String(ret));
+	}
+	public static void SetNx(KvCmd kvCmd){
+		int ret = kvCmd.setnx("null".getBytes(), "fdsfs".getBytes());
+		System.out.println(ret+":"+new String(kvCmd.get("null".getBytes())));
+		
+		ret = kvCmd.setnx("null".getBytes(), "newvalue".getBytes());
+		System.out.println(ret+":"+new String(kvCmd.get("null".getBytes())));
+		
+		ret = kvCmd.set("null".getBytes(), "forcevalue".getBytes());
+		System.out.println(ret+":"+new String(kvCmd.get("null".getBytes())));
+		
+	}
+	public static void foreachBinlog(KvCmd kvCmd){
+//		BinlogQueue binlogs = kvCmd.getBinlogs();
+//		for(long seq = 0;seq<100;seq++){
+//			Binlog log = binlogs.find_next(seq);
+//			if(log!=null){
+//				System.out.println("log:"+log.dumps());
+//			}else{
+//				break;
+//			}
+//		}
+	}
 }
