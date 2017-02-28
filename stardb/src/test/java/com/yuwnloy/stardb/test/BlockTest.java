@@ -1,4 +1,4 @@
-package com.yuwnloy.stardb;
+package com.yuwnloy.stardb.test;
 
 import static org.iq80.leveldb.util.SizeOf.SIZE_OF_INT;
 

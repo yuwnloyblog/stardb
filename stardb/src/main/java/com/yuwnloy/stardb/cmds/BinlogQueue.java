@@ -43,7 +43,7 @@ public class BinlogQueue {
 //			this.last_seq = log.seq();
 //		}
 		this.last_seq = this.find_lastSeq();
-		System.out.println("last_seq:"+this.last_seq);
+		//System.out.println("last_seq:"+this.last_seq);
 		// 下面这段代码是可能性能非常差!
 		//if(this->find_next(0, &log) == 1){
 		//	this->min_seq = log.seq();

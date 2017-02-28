@@ -73,7 +73,7 @@ public class Iq80DBFactory
         VERSION = v;
     }
 
-    public static final Iq80DBFactory factory = new Iq80DBFactory();
+    //public static final Iq80DBFactory factory = new Iq80DBFactory();
 
     @Override
     public DB open(File path, Options options)

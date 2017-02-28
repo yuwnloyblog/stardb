@@ -1,4 +1,4 @@
-package com.yuwnloy.stardb;
+package com.yuwnloy.stardb.test;
 
 import org.iq80.leveldb.impl.InternalEntry;
 import org.iq80.leveldb.impl.InternalKeyComparator;

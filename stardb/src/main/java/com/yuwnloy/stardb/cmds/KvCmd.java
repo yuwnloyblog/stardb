@@ -19,23 +19,23 @@ import com.yuwnloy.stardb.utils.ByteUtil;
 public class KvCmd extends AbstractCmd{
 	private static Logger logger = LoggerFactory.getLogger(KvCmd.class);
 	
-	private static KvCmd instance;
-	private static ReentrantLock lock = new ReentrantLock();
-	public static KvCmd getInstance(DB db, ReadOptions options, BinlogQueue binlogs){
-		if(instance==null){
-			lock.lock();
-			try{
-				if(instance==null){
-					instance = new KvCmd(db,options, binlogs);
-				}
-			}finally{
-				lock.unlock();
-			}
-		}
-		return instance;
-	}
+//	private static KvCmd instance;
+//	private static ReentrantLock lock = new ReentrantLock();
+//	public static KvCmd getInstance(DB db, ReadOptions options, BinlogQueue binlogs){
+//		if(instance==null){
+//			lock.lock();
+//			try{
+//				if(instance==null){
+//					instance = new KvCmd(db,options, binlogs);
+//				}
+//			}finally{
+//				lock.unlock();
+//			}
+//		}
+//		return instance;
+//	}
 	
-	private KvCmd(DB db, ReadOptions options, BinlogQueue binlogs){
+	public KvCmd(DB db, ReadOptions options, BinlogQueue binlogs){
 		super(db, options, binlogs);
 	}
 	/**

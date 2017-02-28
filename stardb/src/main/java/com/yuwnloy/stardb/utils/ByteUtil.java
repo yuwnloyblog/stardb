@@ -30,6 +30,16 @@ public class ByteUtil {
 		}
 		return null;
 	}
+	
+	public static String toString(byte[] bytes){
+		if(bytes!=null&&bytes.length>0){
+			try {
+				return new String(bytes, CHARSET);
+			} catch (UnsupportedEncodingException e) {
+			}
+		}
+		return null;
+	}
 
 	public static byte[] long2Bytes(long num) {
 		byte[] byteNum = new byte[8];

@@ -1,6 +1,6 @@
-package com.yuwnloy.stardb;
+package com.yuwnloy.stardb.test;
 
-import static org.iq80.leveldb.impl.Iq80DBFactory.factory;
+import org.iq80.leveldb.impl.Iq80DBFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,11 +25,12 @@ public class Test {
 	public static void main(String[] args) {
 		Options options = new Options();
 		options.createIfMissing(true);
+		Iq80DBFactory factory = new Iq80DBFactory();
 		try {
 			DB db = factory.open(new File("/tmp/stardb/example"), options);
 			BinlogQueue logQueue = new BinlogQueue(db, true);
 			
-			KvCmd kvCmd = KvCmd.getInstance(db, new ReadOptions(), logQueue);
+			KvCmd kvCmd = new KvCmd(db, new ReadOptions(), logQueue);
 			foreachBinlog(kvCmd);
 			
 		} catch (IOException e) {
