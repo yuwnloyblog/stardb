@@ -27,6 +27,7 @@ public class CmdRequest {
 			list.add(str);
 			if(list.size() == count*2){
 				this.ok = true;
+				this.map.remove(this.identy);
 				CmdRequestProcessor.process(this);
 			}
 		}
@@ -55,8 +56,6 @@ public class CmdRequest {
 	}
 	
 	public void destroy(){
-		this.map.remove(this.identy);
 		this.clientChannel.close();
-		//this.clientChannel.disconnect();
 	}
 }

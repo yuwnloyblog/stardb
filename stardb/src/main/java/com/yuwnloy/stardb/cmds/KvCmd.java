@@ -1,7 +1,5 @@
 package com.yuwnloy.stardb.cmds;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.ReadOptions;
 import org.slf4j.Logger;

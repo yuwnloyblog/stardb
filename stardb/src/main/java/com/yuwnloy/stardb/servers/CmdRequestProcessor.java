@@ -33,7 +33,6 @@ public class CmdRequestProcessor {
 			}
 			
 			request.writeResponse(result);
-			request.destroy();
 		}
 	}
 }
